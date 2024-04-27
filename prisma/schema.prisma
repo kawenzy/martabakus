@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearch","fullTextIndex"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  uuid String @id @default(uuid())
+  name  String @unique
+  email String @unique
+  password String
+  profile String
+  role Roles
+  product Product[]
+  history History[]
+  noties Noties[]
+  salt String
+  comment Comments[] 
+  msg Message[]
+  token String?
+}
+
+
+model Product {
+  cuid  String @id @default(cuid())
+  seller User @relation(fields: [sellerId], references: [uuid])
+  sellerId String
+  title String
+  noties Noties[]
+  description String
+  harga String
+  comment Comments[]
+  thumbnail thumbnail?
+  history History[]
+  stok Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model thumbnail {
+  product Product @relation(fields: [productId], references: [cuid])
+  productId String @unique
+  image String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Noties {
+  id Int @id @default(autoincrement())
+  CusSel User @relation(fields: [CusSelId], references: [uuid])
+  CusSelId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  product Product @relation(fields: [productId], references: [cuid])
+  productId String
+}
+
+model History {
+  id Int @id @default(autoincrement())
+  product Product @relation(fields: [productId], references: [cuid])
+  productId String
+  user User @relation(fields: [userId], references: [uuid])
+  userId String
+  status Status @default(PROCESS)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Comments {
+  id Int @id @default(autoincrement())
+  msg String
+  product Product @relation(fields: [prodId], references: [cuid])
+  prodId String
+  user User @relation(fields: [userId], references: [uuid])
+  userId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model Message {
+  id Int @id @default(autoincrement())
+  sender User @relation(fields: [senderId], references: [uuid])
+  senderId String
+  msg String
+  receiverId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum Roles {
+  SELLER
+  CUSTOMER
+}
+
+enum Status {
+  PROCESS
+  ACCEPTED
+  SENDING
+  REJECTED
+  COMPLETED
+  CANCELLED
+}
